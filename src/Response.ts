@@ -1,3 +1,4 @@
+import { APIGatewayProxyResult } from 'aws-lambda';
 import { Body } from './types/Body';
 import { Headers } from './types/Headers';
 import { Status } from './types/Status';
@@ -78,22 +79,30 @@ export class Response {
   public headers: Headers;
   public status: Status;
 
-  constructor(status: Status, body: Body = null, headers: Headers = {}) {
+  public constructor(status: Status, body: Body = null, headers: Headers = {}) {
     this.status = status;
     this.body = body;
     this.headers = {...headers};
   }
 
-  get status_message() {
+  public get status_message() {
     return Response.statusMessage(this.status);
   }
 
-  static statusMessage(status: Status): string | undefined {
+  public toAPIGatewayProxyResult(): APIGatewayProxyResult {
+    return {
+      body: null !== this.body ? this.body : '',
+      headers: this.headers,
+      statusCode: this.status,
+    };
+  }
+
+  public static statusMessage(status: Status): string | undefined {
     return statusMessages[status];
   }
 
-  static json(status: Status, data: any, headers: Headers = {}) {
-    return new this(status, (null !== data && undefined !== data) ? JSON.stringify(data) : null, {
+  public static fromJSON(json: any, status: Status = 200, headers: Headers = {}) {
+    return new this(status, (null !== json && undefined !== json) ? JSON.stringify(json) : null, {
       ...headers,
       'content-type': 'application/json',
     });

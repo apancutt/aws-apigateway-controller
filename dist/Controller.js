@@ -1,71 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const query_string_1 = require("query-string");
 const ErrorResponse_1 = require("./ErrorResponse");
 const Request_1 = require("./Request");
 class Controller {
-    static async handle(event, context, handler, middlewares = []) {
-        return new Promise((resolve, reject) => {
-            try {
-                const queryStringOptions = {
-                    arrayFormat: 'bracket',
-                };
-                switch (event.httpMethod) {
-                    case 'DELETE':
-                    case 'GET':
-                    case 'HEAD':
-                    case 'POST':
-                    case 'PUT':
-                    case 'STATUS':
-                        break;
-                    default:
-                        throw new ErrorResponse_1.ErrorResponse(`Method "${event.httpMethod}" is not allowed`, undefined, 405);
-                }
-                const headers = {};
-                Object.keys(event.headers).forEach((key) => {
-                    headers[key.toLowerCase()] = event.headers[key];
-                });
-                let bodyParams = {};
-                if (null !== event.body) {
-                    let parser = null;
-                    switch (headers['content-type']) {
-                        case 'application/json':
-                            parser = JSON.parse;
-                            break;
-                        case 'application/x-www-form-urlencoded':
-                            parser = (value) => query_string_1.parse(value, queryStringOptions);
-                            break;
-                    }
-                    if (null !== parser) {
-                        try {
-                            bodyParams = parser(event.body);
-                        }
-                        catch (err) {
-                            throw new ErrorResponse_1.ErrorResponse(`Request body is malformed`, err, 400);
-                        }
-                    }
-                }
-                let queryParams = {};
-                if (event.queryStringParameters) {
-                    queryParams = query_string_1.parse(query_string_1.stringify(event.queryStringParameters, queryStringOptions), queryStringOptions);
-                }
-                resolve(new Request_1.Request(event.httpMethod, event.path, headers, event.body, {
-                    apigateway: {
-                        event,
-                        context
-                    },
-                    body: bodyParams,
-                    path: event.pathParameters || {},
-                    query: queryParams,
-                }));
-            }
-            catch (err) {
-                reject(err);
-            }
-        })
+    static async executeAPIGatewayProxyEvent(event, context, handler, middlewares = []) {
+        try {
+            return Controller.executeRequest(Request_1.Request.fromAPIGatewayProxyEvent(event, context), handler, middlewares);
+        }
+        catch (err) {
+            return Controller.respond(Promise.reject(err));
+        }
+    }
+    static async executeRequest(request, handler, middlewares = []) {
+        return Controller.respond(Promise.resolve(request)
             .then((request) => middlewares.reduce((promise, middleware) => promise.then((request) => middleware.request ? middleware.request.call(middleware, request) : request), Promise.resolve(request)))
             .then(handler)
-            .then((response) => middlewares.reduce((promise, middleware) => promise.then((response) => middleware.response ? middleware.response.call(middleware, response) : response), Promise.resolve(response)))
+            .then((response) => middlewares.reduce((promise, middleware) => promise.then((response) => middleware.response ? middleware.response.call(middleware, response) : response), Promise.resolve(response))));
+    }
+    static async respond(promise) {
+        return promise
             .catch((err) => {
             if (!(err instanceof ErrorResponse_1.ErrorResponse)) {
                 err = new ErrorResponse_1.ErrorResponse(undefined, err);
@@ -75,12 +28,7 @@ class Controller {
             }
             return err.response;
         })
-            .then((response) => ({
-            body: null !== response.body ? response.body : '',
-            headers: response.headers,
-            statusCode: response.status,
-        }));
+            .then((response) => response.toAPIGatewayProxyResult());
     }
 }
 exports.Controller = Controller;
-;

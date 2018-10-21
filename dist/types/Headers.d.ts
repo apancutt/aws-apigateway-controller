@@ -1,3 +1,3 @@
 export declare type Headers = {
-    [key: string]: string | string[];
+    [key: string]: string;
 };

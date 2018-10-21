@@ -1,6 +1,6 @@
-import { APIGatewayEvent, APIGatewayEventRequestContext } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayEventRequestContext } from 'aws-lambda';
 
 export type APIGatewayParams = {
-  event: APIGatewayEvent;
+  event: APIGatewayProxyEvent;
   context: APIGatewayEventRequestContext;
 };

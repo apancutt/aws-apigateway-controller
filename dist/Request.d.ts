@@ -1,3 +1,4 @@
+import { APIGatewayProxyEvent, APIGatewayEventRequestContext } from 'aws-lambda';
 import { Body } from './types/Body';
 import { Headers } from './types/Headers';
 import { Method } from './types/Method';
@@ -10,4 +11,5 @@ export declare class Request {
     path: Path;
     params: Params;
     constructor(method: Method, path: Path, headers?: Headers, body?: Body, params?: Params);
+    static fromAPIGatewayProxyEvent(event: APIGatewayProxyEvent, context: APIGatewayEventRequestContext): Request;
 }

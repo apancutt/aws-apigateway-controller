@@ -78,11 +78,18 @@ class Response {
     get status_message() {
         return Response.statusMessage(this.status);
     }
+    toAPIGatewayProxyResult() {
+        return {
+            body: null !== this.body ? this.body : '',
+            headers: this.headers,
+            statusCode: this.status,
+        };
+    }
     static statusMessage(status) {
         return statusMessages[status];
     }
-    static json(status, data, headers = {}) {
-        return new this(status, (null !== data && undefined !== data) ? JSON.stringify(data) : null, Object.assign({}, headers, { 'content-type': 'application/json' }));
+    static fromJSON(json, status = 200, headers = {}) {
+        return new this(status, (null !== json && undefined !== json) ? JSON.stringify(json) : null, Object.assign({}, headers, { 'content-type': 'application/json' }));
     }
 }
 exports.Response = Response;
