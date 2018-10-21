@@ -50,6 +50,10 @@ class Controller {
                     queryParams = query_string_1.parse(query_string_1.stringify(event.queryStringParameters, queryStringOptions), queryStringOptions);
                 }
                 resolve(new Request_1.Request(event.httpMethod, event.path, headers, event.body, {
+                    apigateway: {
+                        event,
+                        context
+                    },
                     body: bodyParams,
                     path: event.pathParameters || {},
                     query: queryParams,
@@ -62,16 +66,6 @@ class Controller {
             .then((request) => middlewares.reduce((promise, middleware) => promise.then((request) => middleware.request ? middleware.request.call(middleware, request) : request), Promise.resolve(request)))
             .then(handler)
             .then((response) => middlewares.reduce((promise, middleware) => promise.then((response) => middleware.response ? middleware.response.call(middleware, response) : response), Promise.resolve(response)))
-            .then((response) => {
-            const promises = [];
-            middlewares.forEach((middleware) => {
-                if (middleware.response) {
-                    promises.push(middleware.response(response));
-                }
-            });
-            return Promise.all(promises)
-                .then((promises) => promises.pop() || response);
-        })
             .catch((err) => {
             if (!(err instanceof ErrorResponse_1.ErrorResponse)) {
                 err = new ErrorResponse_1.ErrorResponse(undefined, err);
@@ -83,7 +77,7 @@ class Controller {
         })
             .then((response) => ({
             body: null !== response.body ? response.body : '',
-            headers: Object.assign({}, response.headers, { 'access-control-allow-origin': '*' }),
+            headers: response.headers,
             statusCode: response.status,
         }));
     }

@@ -32,7 +32,7 @@ class InvalidParameterErrorResponse extends BadRequestErrorResponse {
     }
 }
 exports.InvalidParameterErrorResponse = InvalidParameterErrorResponse;
-class ParamsMiddleware {
+class ParamRules {
     constructor(rules) {
         this.rules = rules;
     }
@@ -72,4 +72,4 @@ class ParamsMiddleware {
         return request;
     }
 }
-exports.ParamsMiddleware = ParamsMiddleware;
+exports.ParamRules = ParamRules;

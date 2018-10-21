@@ -7,7 +7,6 @@ import { QueryParams } from './types/QueryParams';
 import { ErrorResponse } from './ErrorResponse';
 import { Middleware } from './Middleware'
 import { Request } from './Request';
-import { Response } from './Response';
 
 export class Controller {
 
@@ -73,10 +72,14 @@ export class Controller {
           headers,
           event.body,
           {
+            apigateway: {
+              event,
+              context
+            },
             body: bodyParams,
             path: event.pathParameters || {},
             query: queryParams,
-          }
+          },
         ));
 
       } catch (err) {
@@ -92,21 +95,6 @@ export class Controller {
       .then(handler)
 
       .then((response) => middlewares.reduce((promise, middleware) => promise.then((response) => middleware.response ? middleware.response.call(middleware, response) : response), Promise.resolve(response)))
-
-      .then((response) => {
-
-        const promises: (Response | Promise<Response>)[] = [];
-
-        middlewares.forEach((middleware) => {
-          if (middleware.response) {
-            promises.push(middleware.response(response));
-          }
-        });
-
-        return Promise.all(promises)
-          .then((promises) => promises.pop() || response)
-
-      })
 
       .catch((err) => {
 
@@ -124,10 +112,7 @@ export class Controller {
 
       .then((response) => ({
         body: null !== response.body ? response.body : '',
-        headers: {
-          ...response.headers,
-          'access-control-allow-origin': '*',
-        },
+        headers: response.headers,
         statusCode: response.status,
       }));
 

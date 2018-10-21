@@ -15,12 +15,12 @@ export type RuleSet = {
   validator?: (value: any) => boolean;
 };
 
-export type ParamRuleSet = {
+export type SourceRuleSet = {
   [key: string]: RuleSet;
 };
 
 export type Rules = {
-  [source in ParamSource]?: ParamRuleSet;
+  [source in ParamSource]?: SourceRuleSet;
 };
 
 export type ParamSource = keyof Params;
@@ -83,7 +83,7 @@ export class InvalidParameterErrorResponse extends BadRequestErrorResponse {
 
 }
 
-export class ParamsMiddleware implements Middleware {
+export class ParamRules implements Middleware {
 
   public rules: Rules;
 

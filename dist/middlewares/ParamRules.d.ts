@@ -13,11 +13,11 @@ export declare type RuleSet = {
     sanitizer?: (value: string) => any;
     validator?: (value: any) => boolean;
 };
-export declare type ParamRuleSet = {
+export declare type SourceRuleSet = {
     [key: string]: RuleSet;
 };
 export declare type Rules = {
-    [source in ParamSource]?: ParamRuleSet;
+    [source in ParamSource]?: SourceRuleSet;
 };
 export declare type ParamSource = keyof Params;
 export declare class BadRequestErrorResponse extends ErrorResponse {
@@ -39,7 +39,7 @@ export declare class InvalidParameterErrorResponse extends BadRequestErrorRespon
     value: any;
     constructor(source: ParamSource, key: string, value: any, previous?: Error, status?: Status, headers?: Headers);
 }
-export declare class ParamsMiddleware implements Middleware {
+export declare class ParamRules implements Middleware {
     rules: Rules;
     constructor(rules: Rules);
     protected check(source: ParamSource, params: BodyParams | PathParams | QueryParams): void;
