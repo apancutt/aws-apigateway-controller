@@ -39,5 +39,9 @@
     "build:watch": "npm run build -- --watch",
     "test": "jest",
     "test:watch": "npm run test -- --watch"
+  },
+  "dependencies": {
+    "@types/query-string": "^6.1.1",
+    "query-string": "^6.2.0"
   }
 }

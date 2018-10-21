@@ -1,15 +1,13 @@
-import { RequestBody } from './types/RequestBody';
+import { Body } from './types/Body';
 import { Headers } from './types/Headers';
 import { Method } from './types/Method';
+import { Params } from './types/Params';
 import { Path } from './types/Path';
-import { Query } from './types/Query';
 export declare class Request {
-    path: Path;
-    method: Method;
+    body: Body;
     headers: Headers;
-    query: Query;
-    body: RequestBody;
-    constructor(path: Path, method: Method, headers?: Headers, query?: Query, body?: RequestBody);
-    static form(path: Path, method: Method, headers?: Headers, query?: Query, body?: RequestBody): Request;
-    static json(path: Path, method: Method, headers?: Headers, query?: Query, body?: RequestBody): Request;
+    method: Method;
+    path: Path;
+    params: Params;
+    constructor(method: Method, path: Path, headers?: Headers, body?: Body, params?: Params);
 }

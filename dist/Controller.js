@@ -1,16 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const query_string_1 = require("query-string");
 const ErrorResponse_1 = require("./ErrorResponse");
 const Request_1 = require("./Request");
 class Controller {
-    static async handle(event, context, handler) {
+    static async handle(event, context, handler, middlewares = []) {
         return new Promise((resolve, reject) => {
             try {
-                const body = event.body;
-                const headers = event.headers;
-                const path = event.path;
-                const query = event.queryStringParameters || {};
-                let method;
+                const queryStringOptions = {
+                    arrayFormat: 'bracket',
+                };
                 switch (event.httpMethod) {
                     case 'DELETE':
                     case 'GET':
@@ -18,29 +17,61 @@ class Controller {
                     case 'POST':
                     case 'PUT':
                     case 'STATUS':
-                        method = event.httpMethod;
                         break;
                     default:
-                        throw new ErrorResponse_1.ErrorResponse(`Method "${event.httpMethod}" is not supported`, undefined, 405);
+                        throw new ErrorResponse_1.ErrorResponse(`Method "${event.httpMethod}" is not allowed`, undefined, 405);
                 }
-                let request;
-                switch (event.headers['content-type']) {
-                    case 'application/json':
-                        request = Request_1.Request.json(path, method, headers, query, body);
-                        break;
-                    case 'application/x-www-form-urlencoded':
-                        request = Request_1.Request.form(path, method, headers, query, body);
-                        break;
-                    default:
-                        request = new Request_1.Request(path, method, headers, query, body);
+                const headers = {};
+                Object.keys(event.headers).forEach((key) => {
+                    headers[key.toLowerCase()] = event.headers[key];
+                });
+                let bodyParams = {};
+                if (null !== event.body) {
+                    let parser = null;
+                    switch (headers['content-type']) {
+                        case 'application/json':
+                            parser = JSON.parse;
+                            break;
+                        case 'application/x-www-form-urlencoded':
+                            parser = (value) => query_string_1.parse(value, queryStringOptions);
+                            break;
+                    }
+                    if (null !== parser) {
+                        try {
+                            bodyParams = parser(event.body);
+                        }
+                        catch (err) {
+                            throw new ErrorResponse_1.ErrorResponse(`Request body is malformed`, err, 400);
+                        }
+                    }
                 }
-                resolve(request);
+                let queryParams = {};
+                if (event.queryStringParameters) {
+                    queryParams = query_string_1.parse(query_string_1.stringify(event.queryStringParameters, queryStringOptions), queryStringOptions);
+                }
+                resolve(new Request_1.Request(event.httpMethod, event.path, headers, event.body, {
+                    body: bodyParams,
+                    path: event.pathParameters || {},
+                    query: queryParams,
+                }));
             }
             catch (err) {
                 reject(err);
             }
         })
+            .then((request) => middlewares.reduce((promise, middleware) => promise.then((request) => middleware.request ? middleware.request.call(middleware, request) : request), Promise.resolve(request)))
             .then(handler)
+            .then((response) => middlewares.reduce((promise, middleware) => promise.then((response) => middleware.response ? middleware.response.call(middleware, response) : response), Promise.resolve(response)))
+            .then((response) => {
+            const promises = [];
+            middlewares.forEach((middleware) => {
+                if (middleware.response) {
+                    promises.push(middleware.response(response));
+                }
+            });
+            return Promise.all(promises)
+                .then((promises) => promises.pop() || response);
+        })
             .catch((err) => {
             if (!(err instanceof ErrorResponse_1.ErrorResponse)) {
                 err = new ErrorResponse_1.ErrorResponse(undefined, err);

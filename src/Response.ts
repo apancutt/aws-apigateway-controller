@@ -1,5 +1,5 @@
+import { Body } from './types/Body';
 import { Headers } from './types/Headers';
-import { ResponseBody } from './types/ResponseBody';
 import { Status } from './types/Status';
 
 const statusMessages: {[key: number]: string} = {
@@ -74,11 +74,11 @@ const statusMessages: {[key: number]: string} = {
 
 export class Response {
 
-  public body: ResponseBody;
+  public body: Body;
   public headers: Headers;
   public status: Status;
 
-  constructor(status: Status, body: ResponseBody = null, headers: Headers = {}) {
+  constructor(status: Status, body: Body = null, headers: Headers = {}) {
     this.status = status;
     this.body = body;
     this.headers = {...headers};

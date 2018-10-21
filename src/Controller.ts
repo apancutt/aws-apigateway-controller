@@ -1,23 +1,25 @@
 import { APIGatewayProxyEvent, APIGatewayEventRequestContext, APIGatewayProxyResult } from 'aws-lambda';
-import { Method } from './types/Method';
+import { parse as parseQueryString, stringify as stringifyQueryString, ParseOptions, StringifyOptions } from 'query-string';
+import { BodyParams } from './types/BodyParams';
+import { Handler } from './types/Handler';
+import { Headers } from './types/Headers';
+import { QueryParams } from './types/QueryParams';
 import { ErrorResponse } from './ErrorResponse';
+import { Middleware } from './Middleware'
 import { Request } from './Request';
 import { Response } from './Response';
 
 export class Controller {
 
-  static async handle(event: APIGatewayProxyEvent, context: APIGatewayEventRequestContext, handler: (request: Request) => Response | Promise<Response>): Promise<APIGatewayProxyResult> {
+  static async handle(event: APIGatewayProxyEvent, context: APIGatewayEventRequestContext, handler: Handler, middlewares: Middleware[] = []): Promise<APIGatewayProxyResult> {
 
     return new Promise((resolve: (request: Request) => void, reject) => {
 
       try {
 
-        const body = event.body;
-        const headers = event.headers;
-        const path = event.path;
-        const query = event.queryStringParameters || {};
-
-        let method: Method;
+        const queryStringOptions: ParseOptions & StringifyOptions = {
+          arrayFormat: 'bracket',
+        };
 
         switch (event.httpMethod) {
           case 'DELETE':
@@ -26,26 +28,56 @@ export class Controller {
           case 'POST':
           case 'PUT':
           case 'STATUS':
-            method = event.httpMethod;
             break;
           default:
-            throw new ErrorResponse(`Method "${event.httpMethod}" is not supported`, undefined, 405);
+            throw new ErrorResponse(`Method "${event.httpMethod}" is not allowed`, undefined, 405);
         }
 
-        let request: Request;
+        const headers: Headers = {};
+        Object.keys(event.headers).forEach((key) => {
+          headers[key.toLowerCase()] = event.headers[key];
+        });
 
-        switch (event.headers['content-type']) {
-          case 'application/json':
-            request = Request.json(path, method, headers, query, body);
-            break;
-          case 'application/x-www-form-urlencoded':
-            request = Request.form(path, method, headers, query, body);
-            break;
-          default:
-            request = new Request(path, method, headers, query, body);
+        let bodyParams: BodyParams = {};
+        if (null !== event.body) {
+
+          let parser: ((value: string) => any) | null = null;
+
+          switch (headers['content-type']) {
+            case 'application/json':
+              parser = JSON.parse;
+              break;
+            case 'application/x-www-form-urlencoded':
+              parser = (value) => parseQueryString(value, queryStringOptions);
+              break;
+          }
+
+          if (null !== parser) {
+            try {
+              bodyParams = parser(event.body);
+            } catch (err) {
+              throw new ErrorResponse(`Request body is malformed`, err, 400);
+            }
+          }
+
         }
 
-        resolve(request);
+        let queryParams: QueryParams = {};
+        if (event.queryStringParameters) {
+          queryParams = parseQueryString(stringifyQueryString(event.queryStringParameters, queryStringOptions), queryStringOptions);
+        }
+
+        resolve(new Request(
+          event.httpMethod,
+          event.path,
+          headers,
+          event.body,
+          {
+            body: bodyParams,
+            path: event.pathParameters || {},
+            query: queryParams,
+          }
+        ));
 
       } catch (err) {
 
@@ -55,7 +87,26 @@ export class Controller {
 
     })
 
+      .then((request) => middlewares.reduce((promise, middleware) => promise.then((request) => middleware.request ? middleware.request.call(middleware, request) : request), Promise.resolve(request)))
+
       .then(handler)
+
+      .then((response) => middlewares.reduce((promise, middleware) => promise.then((response) => middleware.response ? middleware.response.call(middleware, response) : response), Promise.resolve(response)))
+
+      .then((response) => {
+
+        const promises: (Response | Promise<Response>)[] = [];
+
+        middlewares.forEach((middleware) => {
+          if (middleware.response) {
+            promises.push(middleware.response(response));
+          }
+        });
+
+        return Promise.all(promises)
+          .then((promises) => promises.pop() || response)
+
+      })
 
       .catch((err) => {
 

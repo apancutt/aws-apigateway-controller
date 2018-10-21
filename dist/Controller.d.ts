@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayEventRequestContext, APIGatewayProxyResult } from 'aws-lambda';
-import { Request } from './Request';
-import { Response } from './Response';
+import { Handler } from './types/Handler';
+import { Middleware } from './Middleware';
 export declare class Controller {
-    static handle(event: APIGatewayProxyEvent, context: APIGatewayEventRequestContext, handler: (request: Request) => Response | Promise<Response>): Promise<APIGatewayProxyResult>;
+    static handle(event: APIGatewayProxyEvent, context: APIGatewayEventRequestContext, handler: Handler, middlewares?: Middleware[]): Promise<APIGatewayProxyResult>;
 }
