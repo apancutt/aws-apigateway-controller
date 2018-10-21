@@ -17,7 +17,7 @@ class RequiredParameterErrorResponse extends BadRequestErrorResponse {
 exports.RequiredParameterErrorResponse = RequiredParameterErrorResponse;
 class MalformedParameterErrorResponse extends BadRequestErrorResponse {
     constructor(source, key, previous, status = 400, headers = {}) {
-        super(`The value for ${source} parameter "${key}" is malformed`, previous, status, headers);
+        super(`The value provided for ${source} parameter "${key}" is malformed`, previous, status, headers);
         this.source = source;
         this.key = key;
     }
@@ -25,7 +25,7 @@ class MalformedParameterErrorResponse extends BadRequestErrorResponse {
 exports.MalformedParameterErrorResponse = MalformedParameterErrorResponse;
 class InvalidParameterErrorResponse extends BadRequestErrorResponse {
     constructor(source, key, value, previous, status = 400, headers = {}) {
-        super(`The value for ${source} parameter "${key}" is invalid: ${value}`, previous, status, headers);
+        super(`The value provided for ${source} parameter "${key}" is invalid`, previous, status, headers);
         this.source = source;
         this.key = key;
         this.value = value;
@@ -41,23 +41,25 @@ class ParamsMiddleware {
         Object.keys(rules).forEach((key) => {
             const { required, defaultValue, sanitizer, validator } = rules[key];
             params[key] = undefined !== params[key] ? params[key] : defaultValue;
-            if (true === required && undefined === params[key]) {
-                throw new RequiredParameterErrorResponse(source, key);
-            }
             if (undefined !== sanitizer) {
                 try {
                     params[key] = sanitizer(params[key]);
                 }
                 catch (err) {
-                    throw err instanceof ErrorResponse_1.ErrorResponse ? err : new MalformedParameterErrorResponse(source, key);
+                    throw err instanceof ErrorResponse_1.ErrorResponse ? err : new MalformedParameterErrorResponse(source, key, err);
                 }
+            }
+            if (true === required && (undefined === params[key] || null === params[key])) {
+                throw new RequiredParameterErrorResponse(source, key);
             }
             if (undefined !== validator) {
                 try {
-                    validator(params[key]);
+                    if (false === validator(params[key])) {
+                        throw new TypeError('Validator returned false');
+                    }
                 }
                 catch (err) {
-                    throw err instanceof ErrorResponse_1.ErrorResponse ? err : new InvalidParameterErrorResponse(source, key, params[key]);
+                    throw err instanceof ErrorResponse_1.ErrorResponse ? err : new InvalidParameterErrorResponse(source, key, params[key], err);
                 }
             }
         });

@@ -56,7 +56,7 @@ export class MalformedParameterErrorResponse extends BadRequestErrorResponse {
 
   constructor(source: ParamSource, key: string, previous?: Error, status: Status = 400, headers: Headers = {}) {
 
-    super(`The value for ${source} parameter "${key}" is malformed`, previous, status, headers);
+    super(`The value provided for ${source} parameter "${key}" is malformed`, previous, status, headers);
 
     this.source = source;
     this.key = key;
@@ -73,7 +73,7 @@ export class InvalidParameterErrorResponse extends BadRequestErrorResponse {
 
   constructor(source: ParamSource, key: string, value: any, previous?: Error, status: Status = 400, headers: Headers = {}) {
 
-    super(`The value for ${source} parameter "${key}" is invalid: ${value}`, previous, status, headers);
+    super(`The value provided for ${source} parameter "${key}" is invalid`, previous, status, headers);
 
     this.source = source;
     this.key = key;
@@ -101,23 +101,25 @@ export class ParamsMiddleware implements Middleware {
 
       params[key] = undefined !== params[key] ? params[key] : defaultValue;
 
-      if (true === required && undefined === params[key]) {
-        throw new RequiredParameterErrorResponse(source, key);
-      }
-
       if (undefined !== sanitizer) {
         try {
           params[key] = sanitizer(params[key]);
         } catch (err) {
-          throw err instanceof ErrorResponse ? err : new MalformedParameterErrorResponse(source, key);
+          throw err instanceof ErrorResponse ? err : new MalformedParameterErrorResponse(source, key, err);
         }
+      }
+
+      if (true === required && (undefined === params[key] || null === params[key])) {
+        throw new RequiredParameterErrorResponse(source, key);
       }
 
       if (undefined !== validator) {
         try {
-          validator(params[key]);
+          if (false === validator(params[key])) {
+            throw new TypeError('Validator returned false');
+          }
         } catch (err) {
-          throw err instanceof ErrorResponse ? err : new InvalidParameterErrorResponse(source, key, params[key]);
+          throw err instanceof ErrorResponse ? err : new InvalidParameterErrorResponse(source, key, params[key], err);
         }
       }
 
@@ -125,7 +127,7 @@ export class ParamsMiddleware implements Middleware {
 
   }
 
-  public request(request: Request): Request {
+  request(request: Request): Request {
 
     const sources: ParamSource[] = ['body', 'path', 'query'];
 
