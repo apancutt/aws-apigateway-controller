@@ -1,6 +1,6 @@
 {
   "name": "aws-apigateway-controller",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Simple handling of requests and responses within AWS API Gateway Lambda Proxy integrations running NodeJS 8.10.",
   "keywords": [
     "aws",
