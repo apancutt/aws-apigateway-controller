@@ -12,7 +12,7 @@ export type RuleSet = {
   required?: boolean;
   defaultValue?: any;
   sanitizer?: (value: string) => any;
-  validator?: (value: any) => boolean;
+  validator?: (value: any) => true;
 };
 
 export type SourceRuleSet = {
@@ -109,15 +109,13 @@ export class ParamRules implements Middleware {
         }
       }
 
-      if (true === required && (undefined === params[key] || null === params[key])) {
-        throw new RequiredParameterErrorResponse(source, key);
-      }
-
-      if (undefined !== validator) {
+      if (undefined === params[key]) {
+        if (required) {
+          throw new RequiredParameterErrorResponse(source, key);
+        }
+      } else if (undefined !== validator) {
         try {
-          if (false === validator(params[key])) {
-            throw new TypeError('Validator returned false');
-          }
+          validator(params[key]);
         } catch (err) {
           throw err instanceof ErrorResponse ? err : new InvalidParameterErrorResponse(source, key, params[key], err);
         }
