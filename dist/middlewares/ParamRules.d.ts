@@ -11,7 +11,7 @@ export declare type RuleSet = {
     required?: boolean;
     defaultValue?: any;
     sanitizer?: (value: string) => any;
-    validator?: (value: any) => boolean;
+    validator?: (value: any) => true;
 };
 export declare type SourceRuleSet = {
     [key: string]: RuleSet;

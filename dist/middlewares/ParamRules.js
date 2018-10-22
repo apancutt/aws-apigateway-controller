@@ -49,14 +49,14 @@ class ParamRules {
                     throw err instanceof ErrorResponse_1.ErrorResponse ? err : new MalformedParameterErrorResponse(source, key, err);
                 }
             }
-            if (true === required && (undefined === params[key] || null === params[key])) {
-                throw new RequiredParameterErrorResponse(source, key);
+            if (undefined === params[key]) {
+                if (required) {
+                    throw new RequiredParameterErrorResponse(source, key);
+                }
             }
-            if (undefined !== validator) {
+            else if (undefined !== validator) {
                 try {
-                    if (false === validator(params[key])) {
-                        throw new TypeError('Validator returned false');
-                    }
+                    validator(params[key]);
                 }
                 catch (err) {
                     throw err instanceof ErrorResponse_1.ErrorResponse ? err : new InvalidParameterErrorResponse(source, key, params[key], err);
