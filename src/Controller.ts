@@ -18,9 +18,9 @@ export class Controller {
   public static async executeRequest(request: Request, handler: Handler, middlewares: Middleware[] = []): Promise<APIGatewayProxyResult> {
     return Controller.respond(
       Promise.resolve(request)
-        .then((request) => middlewares.reduce((promise, middleware) => promise.then((request) => middleware.request ? middleware.request.call(middleware, request) : request), Promise.resolve(request)))
+        .then((request: Request) => middlewares.reduce((promise, middleware) => promise.then((request) => middleware.request ? middleware.request.call(middleware, request) : request), Promise.resolve(request)))
         .then(handler)
-        .then((response) => middlewares.reduce((promise, middleware) => promise.then((response) => middleware.response ? middleware.response.call(middleware, response) : response), Promise.resolve(response)))
+        .then((response: Response) => middlewares.reduce((promise, middleware) => promise.then((response) => middleware.response ? middleware.response.call(middleware, response) : response), Promise.resolve(response)))
     );
   }
 

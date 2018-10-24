@@ -38,7 +38,7 @@ export class RequiredParameterErrorResponse extends BadRequestErrorResponse {
   public source: ParamSource;
   public key: string;
 
-  constructor(source: ParamSource, key: string, previous?: Error, status: Status = 400, headers: Headers = {}) {
+  public constructor(source: ParamSource, key: string, previous?: Error, status: Status = 400, headers: Headers = {}) {
 
     super(`A value for ${source} parameter "${key}" is required`, previous, status, headers);
 
@@ -54,7 +54,7 @@ export class MalformedParameterErrorResponse extends BadRequestErrorResponse {
   public source: ParamSource;
   public key: string;
 
-  constructor(source: ParamSource, key: string, previous?: Error, status: Status = 400, headers: Headers = {}) {
+  public constructor(source: ParamSource, key: string, previous?: Error, status: Status = 400, headers: Headers = {}) {
 
     super(`The value provided for ${source} parameter "${key}" is malformed`, previous, status, headers);
 
@@ -71,7 +71,7 @@ export class InvalidParameterErrorResponse extends BadRequestErrorResponse {
   public key: string;
   public value: any;
 
-  constructor(source: ParamSource, key: string, value: any, previous?: Error, status: Status = 400, headers: Headers = {}) {
+  public constructor(source: ParamSource, key: string, value: any, previous?: Error, status: Status = 400, headers: Headers = {}) {
 
     super(`The value provided for ${source} parameter "${key}" is invalid`, previous, status, headers);
 
@@ -87,7 +87,7 @@ export class ParamRules implements Middleware {
 
   public rules: Rules;
 
-  constructor(rules: Rules) {
+  public constructor(rules: Rules) {
     this.rules = rules;
   }
 
@@ -125,7 +125,7 @@ export class ParamRules implements Middleware {
 
   }
 
-  request(request: Request): Request {
+  public request(request: Request): Request {
 
     const sources: ParamSource[] = ['body', 'path', 'query'];
 

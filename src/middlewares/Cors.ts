@@ -3,7 +3,7 @@ import { Response } from '../Response';
 
 export class Cors implements Middleware {
 
-  response(response: Response): Response {
+  public response(response: Response): Response {
     response.headers['access-control-allow-origin'] = '*';
     return response;
   }
