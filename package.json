@@ -23,25 +23,25 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "dependencies": {
+    "query-string": "6"
+  },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.15",
-    "@types/jest": "^23.3.10",
-    "@types/node": "^10.12.10",
-    "jest": "^23.6.0",
-    "serverless-webpack": "^5.2.0",
-    "ts-jest": "^23.10.5",
-    "ts-loader": "^5.3.1",
-    "typescript": "^3.1.6",
-    "webpack": "^4.26.1"
+    "@types/aws-lambda": "8",
+    "@types/jest": "24",
+    "@types/node": "12",
+    "@types/query-string": "6",
+    "jest": "24",
+    "serverless-webpack": "5",
+    "ts-jest": "24",
+    "ts-loader": "6",
+    "typescript": "3",
+    "webpack": "4"
   },
   "scripts": {
     "build": "rm -rf ./dist/ && tsc",
     "build:watch": "npm run build -- --watch",
     "test": "jest",
     "test:watch": "npm run test -- --watch"
-  },
-  "dependencies": {
-    "@types/query-string": "^6.1.1",
-    "query-string": "^6.2.0"
   }
 }

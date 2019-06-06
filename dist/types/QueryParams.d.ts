@@ -1,3 +1,2 @@
-export declare type QueryParams = {
-    [key: string]: string | string[] | number | number[] | undefined;
-};
+import { ParsedQuery } from 'query-string';
+export declare type QueryParams = ParsedQuery;
