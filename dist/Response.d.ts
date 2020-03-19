@@ -7,7 +7,7 @@ export declare class Response {
     headers: Headers;
     status: Status;
     constructor(status: Status, body?: Body, headers?: Headers);
-    readonly status_message: string | undefined;
+    get status_message(): string | undefined;
     toAPIGatewayProxyResult(): APIGatewayProxyResult;
     static statusMessage(status: Status): string | undefined;
     static fromJSON(json: any, status?: Status, headers?: Headers): Response;

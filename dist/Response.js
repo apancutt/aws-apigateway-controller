@@ -89,7 +89,7 @@ class Response {
         return statusMessages[status];
     }
     static fromJSON(json, status = 200, headers = {}) {
-        return new this(status, (null !== json && undefined !== json) ? JSON.stringify(json) : null, Object.assign({}, headers, { 'content-type': 'application/json' }));
+        return new this(status, (null !== json && undefined !== json) ? JSON.stringify(json) : null, Object.assign(Object.assign({}, headers), { 'content-type': 'application/json' }));
     }
 }
 exports.Response = Response;
