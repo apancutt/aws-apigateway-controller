@@ -28,12 +28,12 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "8",
-    "@types/jest": "24",
-    "@types/node": "12",
+    "@types/jest": "25",
+    "@types/node": "13",
     "@types/query-string": "6",
-    "jest": "24",
+    "jest": "25",
     "serverless-webpack": "5",
-    "ts-jest": "24",
+    "ts-jest": "25",
     "ts-loader": "6",
     "typescript": "3",
     "webpack": "4"
