@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Request = void 0;
 const query_string_1 = require("query-string");
 const ErrorResponse_1 = require("./ErrorResponse");
 class Request {

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Controller = void 0;
 const ErrorResponse_1 = require("./ErrorResponse");
 const Request_1 = require("./Request");
 class Controller {

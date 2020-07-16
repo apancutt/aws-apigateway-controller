@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Response = void 0;
 const statusMessages = {
     100: 'Continue',
     101: 'Switching Protocols',

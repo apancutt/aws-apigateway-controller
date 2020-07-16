@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ParamRules = exports.InvalidParameterErrorResponse = exports.MalformedParameterErrorResponse = exports.RequiredParameterErrorResponse = exports.BadRequestErrorResponse = void 0;
 const ErrorResponse_1 = require("../ErrorResponse");
 class BadRequestErrorResponse extends ErrorResponse_1.ErrorResponse {
     constructor(message, previous, status = 400, headers = {}) {

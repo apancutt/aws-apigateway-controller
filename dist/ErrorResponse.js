@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ErrorResponse = void 0;
 const Response_1 = require("./Response");
 class ErrorResponse extends Error {
     constructor(message, previous, status = 500, headers = {}) {
